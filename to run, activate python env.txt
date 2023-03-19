@@ -1,0 +1,8 @@
+run : python .\app1.py
+activate : .\env\Scripts\activate.ps1
+
+to create db:
+
+from app1 import app, db
+app.app_context().push()
+db.create_all()
