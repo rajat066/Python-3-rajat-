@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, session, render_template, request, redirect, g, url_for
+import os
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import pyodbc
-from requests import session
+from flask_session import Session
 
-user = Flask(__name__)
+user0 = Flask(__name__)
+user0.secret_key = os.urandom(24)
+user0.config["SESSION_PERMANENT"] = False
+user0.config["SESSION_TYPE"] = "filesystem"
 
 
 def connection():
@@ -28,7 +32,7 @@ def connection():
 # cursor.close()
 # conn.close()
 
-@user.route("/")
+@user0.route("/")
 def main():
     # users = []
     # conn = connection()
@@ -39,44 +43,81 @@ def main():
     # conn.close()
     # return render_template("login.html", users=users)
     return render_template('base.html')
+global logged_user
 # http://localhost:5000/pythonlogin/ - the following will be our login page, which will use both GET and POST requests
-@user.route("/login/", methods=['GET', 'POST'])
+# @user.route("/login/", methods=['GET', 'POST'])
+# def login():
+#     # Output message if something goes wrong...
+#     error_msg = ''
+#     action = render_template('login.html', msg='')
+#     if request.method == 'POST':
+#         Session.pop('user', None)
+#         if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+#             username = request.form['username']
+#             password = request.form['password']
+#             logged_user = username
+#             #Check if account exists  using MSSql
+#             conn = connection()
+#             cursur = conn.cursor()
+#             cursur.execute('SELECT * FROM Users WHERE EmailId = ? AND UserPassword = ?', (username, password))
+#             #Fetch one record and return result
+#             account = cursur.fetchone()
+#             if account:
+#                 # Create session data, we can access this data in other routes
+#                 # Redirect to home page
+#                 # Session['username'] = account['username']
+#                 action = render_template('landing.html', username = username)
+#                 # msg1 = "Hello {0}".format(username)
+#                 return action
+#             else:
+#                 #Account doent exist or username/password incorrect
+#                 error_msg = 'Incorrect username/password!'
+#                 action = render_template('login.html', error_msg = error_msg)
+
+#         return action
+
+@user0.route("/login/", methods=['GET', 'POST'])
 def login():
     # Output message if something goes wrong...
-    error_msg = 'Something went wrong'
+    error_msg = ''
     action = render_template('login.html', msg='')
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+    if request.method == 'POST':
+        session.pop('user', None)
         username = request.form['username']
         password = request.form['password']
-        #Check if account exists  using MSSql
+        logged_user = username
         conn = connection()
         cursur = conn.cursor()
         cursur.execute('SELECT * FROM Users WHERE EmailId = ? AND UserPassword = ?', (username, password))
         #Fetch one record and return result
         account = cursur.fetchone()
         if account:
-            # Create session data, we can access this data in other routes
-            # session['loggedin'] = True
-            # session['id'] = account['id']
-            # session['username'] = account['username']
-            # Redirect to home page
-            action = redirect("/landing")
-            # msg1 = "Hello {0}".format(username)
-            return action
+            session['user'] = request.form['username']
+            return redirect(url_for('landing1'))
         else:
             #Account doent exist or username/password incorrect
-            msg = 'Incorrect username/password!'
-
+            error_msg = 'Incorrect username/password!'
+            action = render_template('login.html', error_msg = error_msg)
     return action
 
-@user.route("/landing/", methods=['GET', 'POST'])
+
+@user0.route("/landing/", methods=['GET', 'POST'])
 def landing1():
-    s
+    if g.user:
+        return render_template('landing.html', user = session['user'])
+    return redirect(url_for('login'))
+
+@user0.before_request
+def before_request():
+    g.user = None
+    if 'user' in session:
+        g.user = session['user']
+        
 
 
-@user.route("/contact/")
+@user0.route("/contact/")
 def contact():
     return render_template('contact.html')
     
 if __name__ == "__main__":
-    user.run(debug=True, port=5001)
+    user0.run(debug=True, port=5001)

@@ -1,4 +1,4 @@
-run : python .\app1.py
+run : python .\app2.py
 activate : .\env\Scripts\activate.ps1
 
 to create db:
