@@ -6,7 +6,7 @@ import pyodbc
 from flask_session import Session
 
 user0 = Flask(__name__)
-user0.secret_key = os.urandom(24)
+user0.secret_key = "super_secret_key"
 user0.config["SESSION_PERMANENT"] = False
 user0.config["SESSION_TYPE"] = "filesystem"
 
@@ -91,11 +91,18 @@ def login():
         cursur.execute('SELECT * FROM Users WHERE EmailId = ? AND UserPassword = ?', (username, password))
         #Fetch one record and return result
         account = cursur.fetchone()
+        # if account:
+        #     session['user'] = request.form['username']
+        #     return redirect(url_for('landing1'))
+        # else:
+        #     #Account doent exist or username/password incorrect
+        #     error_msg = 'Incorrect username/password!'
+        #     action = render_template('login.html', error_msg = error_msg)
         if account:
-            session['user'] = request.form['username']
+            session['loggedin'] = 'Ture'
+            session['username'] = account[0]
             return redirect(url_for('landing1'))
         else:
-            #Account doent exist or username/password incorrect
             error_msg = 'Incorrect username/password!'
             action = render_template('login.html', error_msg = error_msg)
     return action
@@ -103,15 +110,35 @@ def login():
 
 @user0.route("/landing/", methods=['GET', 'POST'])
 def landing1():
-    if g.user:
-        return render_template('landing.html', user = session['user'])
+    data0 = session['username']
+    if (data0 != 0):
+        return render_template('landing.html', username = data0)
+    else:
+        return render_template(url_for(login))
     return redirect(url_for('login'))
 
-@user0.before_request
-def before_request():
-    g.user = None
-    if 'user' in session:
-        g.user = session['user']
+# @user0.route("/logout/")
+# def logout():
+#     session.pop('loggedin', None)
+#     session.pop('username', None)
+#     return redirect(url_for('login'))
+
+@user0.route("/logout/")
+def logout():
+    session.pop('loggedin', None)
+    session.pop('username', None)
+    return redirect(url_for('login'))
+
+# @user0.route("/landing/", methods=['GET', 'POST'])
+# def landing1():
+#     return render_template('landing.html', username = session['username'])
+    #return redirect(url_for('login'))
+
+# @user0.before_request
+# def before_request():
+#     g.user = None
+#     if 'user' in session:
+#         g.user = session['user']
         
 
 

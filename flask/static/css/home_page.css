@@ -32,7 +32,7 @@
   
     min-height: 8vh;
   
-    background-color: teal;
+    background-color: rgb(223, 97, 185);
   
     font-family: "Montserrat", sans-serif;
   
@@ -40,7 +40,7 @@
   
   .heading {
   
-    color: white;
+    color: rgb(212, 10, 10);
   
     text-transform: uppercase;
   
@@ -68,7 +68,7 @@
   
   .nav-links a {
   
-    color: white;
+    color: rgb(250, 248, 248);
   
     text-decoration: none;
   
@@ -84,12 +84,12 @@
   
   .nav-links a:hover:not(.active) {
   
-    background-color: lightseagreen;
+    background-color: rgb(216, 98, 30);
   
   }
   
   .nav-links li a.active {
   
-    background-color: #4caf50;
+    background-color: #158019;
   
   }
